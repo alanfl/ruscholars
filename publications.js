@@ -2,7 +2,7 @@ const axios = require("axios");
 const fs = require("fs");
 const count = 1;
 const aid = 7004063542;
-
+const authors = require("./getAuthors.js");
 
 // Returns the total number of publications associated with the author ID
 async function getMaxPubliciations (authorId) {
@@ -62,7 +62,7 @@ async function getArticleAbstract (articleId) {
 	console.log(url)
 	let abstract = axios.get(url)
 		.then(response => {
-			return response.data["abstracts-retrieval-response"];
+			return response.data["abstracts-retrieval-response"].coredata["dc:description"];
 		})
 		.catch(error => {
 			console.log(error);
@@ -71,21 +71,32 @@ async function getArticleAbstract (articleId) {
 	return abstract;
 }
 
+function testModule() {
+	console.log("Called from getFromAuthor.js!");
+}
 
-(async ()=> {
-	var max = await getMaxPubliciations(aid);
-	console.log("***FOUND " + max + " PUBLICATIONS FOR " + aid + "***")
+// DEBUG
+// (async ()=> {
+// 	var max = await getMaxPubliciations(aid);
+// 	console.log("***FOUND " + max + " PUBLICATIONS FOR " + aid + "***")
 
-	for(let start = 0; start <= max; start++) {
-		var id = (await getArticleIds(aid, start)) 
-		console.log(id)
+// 	for(let start = 0; start <= max; start++) {
+// 		var id = (await getArticleIds(aid, start)) 
+// 		console.log(id)
 
 
-		// Detailed information
-		console.log("=========ARTICLE INFORMATION=========")
-		console.log( await getArticleInformation(id) );
-		console.log("=========ARTICLE ABSTRACT=========")
-		console.log( await getArticleAbstract(id));
-		console.log("==================");
-	}
-})()
+// 		// Detailed information
+// 		console.log("=========ARTICLE INFORMATION=========")
+// 		console.log( await getArticleInformation(id) );
+// 		console.log("=========ARTICLE ABSTRACT=========")
+// 		console.log( await getArticleAbstract(id));
+// 		console.log("==================");
+// 	}
+// })()
+// DEBUG END
+
+
+// EXPORT FUNCTIONS
+module.exports = function() {
+	this.testModule = function () { console.log("Called from getFromAuthor.js!"); }
+}

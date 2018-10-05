@@ -1,6 +1,8 @@
 const axios = require("axios");
 const fs = require("fs");
 const readline = require('readline')
+const publications = require("./getFromAuthor.js");
+
 var authors = new Map();
 var authorsTemp = []
 
@@ -57,6 +59,7 @@ async function createAuthor(authorData) {
 		"authorId": parseInt( (authorData["coredata"]['dc:identifier']).substring(10)),
 		"eid": authorData["coredata"]["eid"],
 		"document-count": authorData["coredata"]["document-count"],
+		//"documents": 
 		"cited-by-count": authorData["coredata"]["cited-by-count"],
 		"citation-count": authorData["coredata"]["citation-count"],
 		"affiliation-current-id": authorData["affiliation-current"]["@id"],
@@ -85,5 +88,8 @@ async function populateAuthors() {
 }
 
 (async ()=> { 
+	console.log(publications.testModule)
+
 	await populateAuthors();
 })()
+
