@@ -1,10 +1,10 @@
 const axios = require("axios");
 const fs = require("fs");
 const readline = require('readline')
-const publications = require("./getFromAuthor.js");
+const publications = require("./publications.js");
 
 var authors = new Map();
-var authorsTemp = []
+var authorsTemp = [];
 
 // Reads in a file of provided author ids and filters relevant data to an output file for use
 // in the RUScholars system
@@ -88,7 +88,7 @@ async function populateAuthors() {
 }
 
 (async ()=> { 
-	console.log(publications.testModule)
+	console.log(publications.testModule())
 
 	await populateAuthors();
 })()

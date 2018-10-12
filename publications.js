@@ -2,12 +2,20 @@ const axios = require("axios");
 const fs = require("fs");
 const count = 1;
 const aid = 7004063542;
-const authors = require("./getAuthors.js");
+const API_KEY = 53dbebb3541a6f89921f6495a85d039e;
+const authors = require("./authors.js");
+
+// EXPORT FUNCTIONS
+module.exports = {
+	testModule: function () { console.log("Called from publications.js!"); }
+}
+
+
 
 // Returns the total number of publications associated with the author ID
 async function getMaxPubliciations (authorId) {
 
-	let maxPromise = axios.get("https://api.elsevier.com/content/search/scopus?query=AU-ID("+authorId+")&apiKey=53dbebb3541a6f89921f6495a85d039e")
+	let maxPromise = axios.get("https://api.elsevier.com/content/search/scopus?query=AU-ID("+authorId+")&apiKey=" + API_KEY);
 		.then(response => {
 			return response.data["search-results"]["opensearch:totalResults"];
 		})
@@ -22,7 +30,7 @@ async function getMaxPubliciations (authorId) {
 async function getArticleIds (authorId, start) {
 
 	// Compute URL
-	var url = "https://api.elsevier.com/content/search/scopus?query=AU-ID("+authorId+")&apiKey=53dbebb3541a6f89921f6495a85d039e&start="+start+"&count=1&field=prism:doi"
+	var url = "https://api.elsevier.com/content/search/scopus?query=AU-ID("+authorId+")&apiKey=" + API_KEY +"&start="+start+"&count=1&field=prism:doi";
 
 	// Fetch from URL
 	let articleIds = axios.get(url)
@@ -40,7 +48,7 @@ async function getArticleIds (authorId, start) {
 function getArticleInformation (articleId) {
 
 	// Compute url
-	var url = "https://api.elsevier.com/content/search/scopus?query=DOI(" + encodeURIComponent( articleId ) + ")&apiKey=53dbebb3541a6f89921f6495a85d039e"
+	var url = "https://api.elsevier.com/content/search/scopus?query=DOI(" + encodeURIComponent( articleId ) + ")&apiKey=" + API_KEY;
 
 	console.log(url)
 	let articleInfo = axios.get(url)
@@ -57,7 +65,7 @@ function getArticleInformation (articleId) {
 
 async function getArticleAbstract (articleId) {
 
-	var url = 'https://api.elsevier.com/content/abstract/doi/' + encodeURI( articleId ) + "?apiKey=53dbebb3541a6f89921f6495a85d039e"
+	var url = 'https://api.elsevier.com/content/abstract/doi/' + encodeURI( articleId ) + "?apiKey=" + API_KEY;
 
 	console.log(url)
 	let abstract = axios.get(url)
@@ -72,7 +80,7 @@ async function getArticleAbstract (articleId) {
 }
 
 function testModule() {
-	console.log("Called from getFromAuthor.js!");
+	console.log("Called from publications.js!");
 }
 
 // DEBUG
@@ -94,9 +102,3 @@ function testModule() {
 // 	}
 // })()
 // DEBUG END
-
-
-// EXPORT FUNCTIONS
-module.exports = function() {
-	this.testModule = function () { console.log("Called from getFromAuthor.js!"); }
-}
