@@ -2,6 +2,7 @@ const axios = require("axios");
 const fs = require("fs");
 const readline = require('readline')
 const publications = require("./publications.js");
+const API_KEY = "53dbebb3541a6f89921f6495a85d039e"
 
 var authors = new Map();
 var authorsTemp = [];
@@ -10,7 +11,7 @@ var authorsTemp = [];
 // in the RUScholars system
 // For now, the entire file will be read into memory, but as the file size expands, a file stream
 // will need to be used
-async function readAuthorFile(fileName) {
+async function readFile(fileName) {
 	authorsTemp = fs.readFileSync('test.txt').toString().split("\n");
 
 	console.log(authorsTemp);
@@ -19,7 +20,7 @@ async function readAuthorFile(fileName) {
 async function getAuthorData(authorId) {
 
 	// Assemble URL
-	var url = "https://api.elsevier.com/content/author/author_id/"+authorId+"?apiKey=53dbebb3541a6f89921f6495a85d039e";
+	var url = "https://api.elsevier.com/content/author/author_id/"+authorId+"?apiKey=" + API_KEY;
 
 	console.log("url = " + url)
 
@@ -42,7 +43,7 @@ async function getAuthorData(authorId) {
 
 async function createAuthor(authorData) {
 
-
+	var data = authorData;
 	// DEBUG
 
 	// console.log("***AUTHOR DATA***")
@@ -56,22 +57,23 @@ async function createAuthor(authorData) {
 
 	var author = 
 	{
-		"authorId": parseInt( (authorData["coredata"]['dc:identifier']).substring(10)),
-		"eid": authorData["coredata"]["eid"],
-		"document-count": authorData["coredata"]["document-count"],
+		"authorId": parseInt( (data["coredata"]['dc:identifier']).substring(10)),
+		"eid": data["coredata"]["eid"],
+		"document-count": data["coredata"]["document-count"],
 		//"documents": 
-		"cited-by-count": authorData["coredata"]["cited-by-count"],
-		"citation-count": authorData["coredata"]["citation-count"],
-		"affiliation-current-id": authorData["affiliation-current"]["@id"],
-		"affiliation-current-name": authorData["author-profile"]["affiliation-current"]["affiliation"]["ip-doc"]["afdispname"],
-		"subject-areas": authorData["subject-areas"]
+		"cited-by-count": data["coredata"]["cited-by-count"],
+		"citation-count": data["coredata"]["citation-count"],
+		"affiliation-current-id": data["affiliation-current"]["@id"],
+		"affiliation-current-name": data["author-profile"]["affiliation-current"]["affiliation"]["ip-doc"]["afdispname"],
+		"subject-areas": data["subject-areas"]
 	}
 
 	console.log(author)
 }
 
-async function populateAuthors() {
-	await readAuthorFile("test.txt");
+// Populates a map with Author objects
+async function populateAuthors(fileName) {
+	await readFile(fileName);
 
 	for(i in authorsTemp) {
 		var data = (await getAuthorData(authorsTemp[i]));
@@ -90,6 +92,6 @@ async function populateAuthors() {
 (async ()=> { 
 	console.log(publications.testModule())
 
-	await populateAuthors();
+	await populateAuthors("test.txt");
 })()
 
