@@ -23,7 +23,7 @@ async function readAuthorFile(fileName) {
 // Returns the total number of publications associated with the author ID
 async function getMaxPubliciations (authorId) {
 
-	let maxPromise = axios.get("https://api.elsevier.com/content/search/scopus?query=AU-ID("+authorId+")&apiKey=" + API_KEY);
+	let maxPromise = axios.get("https://api.elsevier.com/content/search/scopus?query=AU-ID("+authorId+")&apiKey=" + API_KEY)
 		.then(response => {
 			return response.data["search-results"]["opensearch:totalResults"];
 		})
