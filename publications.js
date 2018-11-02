@@ -77,7 +77,8 @@ async function createArticle(articleData) {
 	var authors = [];
 
 	for(a in data.authors) {
-		authors.push(a.auid);
+		console.log(a["@auid"])
+		authors.push(a["@auid"]);
 	}
 
 	var article = {
@@ -109,7 +110,14 @@ async function populatePublicationMap(fileName) {
 
 }
 
+
+
 // DEBUG
+
+(async ()=> {
+	createArticle( await getArticleData("10.3791/56628"))
+})
+
 // (async ()=> {
 // 	var max = await getMaxPubliciations(aid);
 // 	console.log("***FOUND " + max + " PUBLICATIONS FOR " + aid + "***")
