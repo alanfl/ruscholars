@@ -4,17 +4,15 @@ const readline = require('readline')
 const publications = require("./publications.js");
 const API_KEY = "53dbebb3541a6f89921f6495a85d039e"
 
-var authors = new Map();
-var authorsTemp = [];
-
 // Reads in a file of provided author ids and filters relevant data to an output file for use
 // in the RUScholars system
 // For now, the entire file will be read into memory, but as the file size expands, a file stream
 // will need to be used
-async function readFile(fileName) {
+function readFile(fileName) {
+	var authorsTemp = [];
 	authorsTemp = fs.readFileSync('test.txt').toString().split("\n");
 
-	console.log(authorsTemp);
+	return authorsTemp;
 }
 
 async function getAuthorData(authorId) {
@@ -41,7 +39,7 @@ async function getAuthorData(authorId) {
 	return authorPromise;
 }
 
-async function createAuthor(authorData) {
+function createAuthor(authorData) {
 
 	var data = authorData;
 	// DEBUG
@@ -60,33 +58,38 @@ async function createAuthor(authorData) {
 		"authorId": parseInt( (data["coredata"]['dc:identifier']).substring(10)),
 		"eid": data["coredata"]["eid"],
 		"document-count": data["coredata"]["document-count"],
-		//"documents": 
+		//"documents": // TO-DO Create set of Scopus article IDs
 		"cited-by-count": data["coredata"]["cited-by-count"],
 		"citation-count": data["coredata"]["citation-count"],
-		"affiliation-current-id": data["affiliation-current"]["@id"],
-		"affiliation-current-name": data["author-profile"]["affiliation-current"]["affiliation"]["ip-doc"]["afdispname"],
-		"subject-areas": data["subject-areas"]
+		"subject-areas": data["subject-areas"]["subject-area"],
+		"affiliation-current": data["author-profile"]["affiliation-current"]["affiliation"],
+		"affiliation-history": data["author-profile"]["affiliation-history"]
 	}
 
-	console.log(author)
+	return author;
+}
+
+// 
+async function pushAuthor(id, map) {
+	let data = await getAuthorData(id);
+	let author = createAuthor(data);
+	map.set(id, author);
 }
 
 // Populates a map with Author objects
-async function populateAuthors(fileName) {
-	await readFile(fileName);
+async function pushAllAuthors(fileName) {
 
-	for(i in authorsTemp) {
-		var data = (await getAuthorData(authorsTemp[i]));
+	let map = new Map();
+	let promises = [];
+	let authors = readFile(fileName);
 
-		// DEBUG
-		// console.log(data);
-
-		 authors.set(authorsTemp[i], await createAuthor(data));
+	for(authorId of authors) {
+		promises.push(pushAuthor(authorId, map))
 	}
 
-	// DEBUG
-	console.log("Populated Author Map.")
-	console.log(authors.get(57201419005))
+	await Promise.all(promises);
+
+	return map;
 }
 
 (async ()=> { 

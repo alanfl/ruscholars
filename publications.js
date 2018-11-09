@@ -5,18 +5,17 @@ const aid = 7004063542;
 const API_KEY = "53dbebb3541a6f89921f6495a85d039e";
 const authors = require("./authors.js");
 
-var articles = new Map();
-var articlesTemp = [];
-
 // EXPORT FUNCTIONS
 module.exports = {
 	testModule: function () { console.log("Called from publications.js!"); }
 }
 
-async function readAuthorFile(fileName) {
-	articlesTemp = fs.readFileSync('testArticles.txt').toString().split("\n");
+function readAuthorFile(fileName) {
+	var articles = [];
 
-	console.log(authorsTemp);
+	articles = fs.readFileSync('testArticles.txt').toString().split("\n");
+
+	return articles;
 }
 
 
@@ -71,7 +70,7 @@ async function getArticleData(articleId) {
 }
 
 // Creates a Publication object based on data returned from the Scopus DB
-async function createArticle(articleData) {
+function createArticle(articleData) {
 
 	var data = articleData;
 	var authors = [];
@@ -88,26 +87,36 @@ async function createArticle(articleData) {
 		"title": data["dc:title"],
 		"publicationName": data["dc:publisher"],
 		"citedby-count": data["citedby-count"]
-		"abstract": data["dc:description"].abstract,
+		"abstrac"t: data["dc:description"].abstract,
 		"authors": authors,
 		"keywords": data["idxterms"],
 		"subject-areas": data["subject-areas"]
 	}
 
-	console.log(article)
+	return article;
+}
+
+// Retrieves data, formats into an article object, and then pushes into a map async.
+async function pushArticle(articleId, map) {
+	let data = await getArticleData(articleId);
+	let article = createArticle(data);
+	map.set(articleId, article);
 }
 
 // Populates a map with publication objects based on a document of articleIds
-async function populatePublicationMap(fileName) {
-	var articles = [];
-	var max = await getMaxPubliciations(authorId);
+async function pushAllArticles(fileName) {
 
-	for(let start = 0; start <= max; start++) {
-		var articleId = await getArticleId(authorId, start);
+	let articles = readAuthorFile(fileName);
+	let map = new Map();
+	let promises = [];
 
-
+	for (articleId of articles) {
+		promises.push(pushArticle(articleId, map)); // Calls each individual article to push in
 	}
 
+	await Promise.all(promises); // Waits for all Promises to fulfill before returning
+
+	return map;
 }
 
 
@@ -115,7 +124,7 @@ async function populatePublicationMap(fileName) {
 // DEBUG
 
 (async ()=> {
-	createArticle( await getArticleData("10.3791/56628"))
+	console.log( await pushAllArticles("testArticles.txt") )
 })
 
 // (async ()=> {
