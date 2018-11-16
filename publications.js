@@ -14,15 +14,21 @@ module.exports = {
 		let promises = [];
 		let max = await getMaxPubliciations(id);
 
-		for(m of max) {
-			promises.push( articles.push(getArticleId(id, m)) );
+		for(let m = 0; m < max; m++) {
+			promises.push( articles.push(getArticleIdByAuthor(id, m)) );
 		}
 
-		await Promises.all(promises);
-
+		await Promise.all(promises);
 		return articles;
 	}
 
+}
+
+// Promise based sleep
+function sleeper(ms) {
+	return function(x) {
+		return new Promise(resolve => setTimeout( () => resolve(x), ms));
+	};
 }
 
 function readAuthorFile(fileName) {
@@ -37,11 +43,15 @@ function readAuthorFile(fileName) {
 // Returns the total number of publications associated with the author ID
 async function getMaxPubliciations (authorId) {
 
-	let maxPromise = axios.get("https://api.elsevier.com/content/search/scopus?query=AU-ID("+authorId+")&apiKey=" + API_KEY)
+	let url = "https://api.elsevier.com/content/search/scopus?query=AU-ID("+authorId+")&apiKey=" + API_KEY;
+	// console.log("FETCHING MAX_ARTICLES FROM: " + url);
+
+	let maxPromise = axios.get(url)
 		.then(response => {
 			return response.data["search-results"]["opensearch:totalResults"];
 		})
 		.catch(error => {
+			console.log("FAILED TO FETCH MAX_ARTICLES FROM: " + url)
 			console.log(error);
 		})
 
@@ -49,10 +59,12 @@ async function getMaxPubliciations (authorId) {
 }
 
 // Returns a Promise that fetches the DOIs of articles associated with the author ID at the specified index
-async function getArticleId (authorId, start) {
+async function getArticleIdByAuthor (authorId, start) {
 
 	// Compute URL
 	var url = "https://api.elsevier.com/content/search/scopus?query=AU-ID("+authorId+")&apiKey=" + API_KEY +"&start="+start+"&count=1&field=prism:doi";
+
+	// console.log("FETCHING ARTICLE_ID FROM: " + url); // DEBUG
 
 	// Fetch from URL
 	let articleIds = axios.get(url)
@@ -60,6 +72,7 @@ async function getArticleId (authorId, start) {
 			return response.data["search-results"]["entry"][0]["prism:doi"];
 		})
 		.catch(error => {
+			console.log("FAILED REQUEST: " + url)
 			console.log(error);
 		}) 
 
@@ -72,7 +85,7 @@ async function getArticleData(articleId) {
 
 	var url = 'https://api.elsevier.com/content/abstract/doi/' + encodeURI( articleId ) + "?apiKey=" + API_KEY;
 
-	console.log(url)
+	// console.log(url)
 	let data = axios.get(url)
 		.then(response => {
 			return response.data["abstracts-retrieval-response"].coredata;
@@ -91,7 +104,7 @@ function createArticle(articleData) {
 	var authors = [];
 
 	for(a in data.authors) {
-		console.log(a["@auid"])
+		// console.log(a["@auid"])
 		authors.push(a["@auid"]);
 	}
 
@@ -138,9 +151,9 @@ async function pushAllArticles(fileName) {
 
 // DEBUG
 
-(async ()=> {
-	console.log( await pushAllArticles("testArticles.txt") )
-})
+// (async ()=> {
+// 	console.log( await pushAllArticles("testArticles.txt") )
+// })
 
 // (async ()=> {
 // 	var max = await getMaxPubliciations(aid);

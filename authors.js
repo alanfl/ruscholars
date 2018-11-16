@@ -15,12 +15,13 @@ function readFile(fileName) {
 	return authorsTemp;
 }
 
+// Returns coredata associated with an author's Scopus ID
 async function getAuthorData(authorId) {
 
 	// Assemble URL
 	var url = "https://api.elsevier.com/content/author/author_id/"+authorId+"?apiKey=" + API_KEY;
 
-	console.log("url = " + url)
+	// console.log("url = " + url)
 
 	// Handle response
 	let authorPromise = axios.get(url)
@@ -33,12 +34,15 @@ async function getAuthorData(authorId) {
 
 		})
 		.catch(error => {
+			console.log("FAILED TO FETCH AUTHOR_DATA FROM: " + url)
 			console.log(error);
 		})
 
 	return authorPromise;
 }
 
+// Creates an author object given coredata
+// NOTE: Document IDs associated with an author must be added separately
 function createAuthor(authorData) {
 
 	var data = authorData;
@@ -69,13 +73,16 @@ function createAuthor(authorData) {
 	return author;
 }
 
-// 
+// Creates an author object based on Scopus data
 async function pushAuthor(id, map) {
 	let data = await getAuthorData(id);
-	let articles = await publications.getAuthorArticles(id);
 	let author = createAuthor(data);
-	author["documents"] = articles;
 	map.set(id, author);
+}
+
+async function setDocuments(id, map) {
+	let data = await publications.getAuthorArticles(id);
+	map.get(id)["documents"] = data;
 }
 
 // Populates a map with Author objects
@@ -85,11 +92,15 @@ async function pushAllAuthors(fileName) {
 	let promises = [];
 	let authors = readFile(fileName);
 
-	for(authorId of authors) {
-		promises.push(pushAuthor(authorId, map))
+	for(let authorId of authors) {
+		promises.push(pushAuthor(authorId, map));
 	}
 
 	await Promise.all(promises);
+
+	for(let authorId of authors) {
+		await setDocuments(authorId, map);
+	}
 
 	return map;
 }
@@ -97,6 +108,6 @@ async function pushAllAuthors(fileName) {
 (async ()=> { 
 	console.log(publications.testModule())
 
-	await pushAllAuthors("test.txt");
+	console.log(await pushAllAuthors("test.txt"));
 })()
 
