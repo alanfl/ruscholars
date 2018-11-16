@@ -58,7 +58,7 @@ function createAuthor(authorData) {
 		"authorId": parseInt( (data["coredata"]['dc:identifier']).substring(10)),
 		"eid": data["coredata"]["eid"],
 		"document-count": data["coredata"]["document-count"],
-		//"documents": // TO-DO Create set of Scopus article IDs
+		"documents": [],
 		"cited-by-count": data["coredata"]["cited-by-count"],
 		"citation-count": data["coredata"]["citation-count"],
 		"subject-areas": data["subject-areas"]["subject-area"],
@@ -72,7 +72,9 @@ function createAuthor(authorData) {
 // 
 async function pushAuthor(id, map) {
 	let data = await getAuthorData(id);
+	let articles = await publications.getAuthorArticles(id);
 	let author = createAuthor(data);
+	author["documents"] = articles;
 	map.set(id, author);
 }
 

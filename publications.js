@@ -7,7 +7,22 @@ const authors = require("./authors.js");
 
 // EXPORT FUNCTIONS
 module.exports = {
-	testModule: function () { console.log("Called from publications.js!"); }
+	testModule: function () { console.log("Called from publications.js!"); },
+
+	getAuthorArticles: async function (id) {
+		let articles = [];
+		let promises = [];
+		let max = await getMaxPubliciations(id);
+
+		for(m of max) {
+			promises.push( articles.push(getArticleId(id, m)) );
+		}
+
+		await Promises.all(promises);
+
+		return articles;
+	}
+
 }
 
 function readAuthorFile(fileName) {
