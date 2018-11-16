@@ -97,6 +97,6 @@ async function pushAllAuthors(fileName) {
 (async ()=> { 
 	console.log(publications.testModule())
 
-	await populateAuthors("test.txt");
+	await pushAllAuthors("test.txt");
 })()
 
