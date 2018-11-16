@@ -102,7 +102,7 @@ function createArticle(articleData) {
 		"title": data["dc:title"],
 		"publicationName": data["dc:publisher"],
 		"citedby-count": data["citedby-count"]
-		"abstrac"t: data["dc:description"].abstract,
+		"abstract": data["dc:description"].abstract,
 		"authors": authors,
 		"keywords": data["idxterms"],
 		"subject-areas": data["subject-areas"]
